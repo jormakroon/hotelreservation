@@ -21,6 +21,7 @@ public class ReservationInfo implements Serializable {
     private String firstName;
     private String lastName;
     private String nationality;
+    private String phone;
     private Instant checkInDate;
     private Instant checkOutDate;
     private Integer nights;

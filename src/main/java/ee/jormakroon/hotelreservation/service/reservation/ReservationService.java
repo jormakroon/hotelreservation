@@ -3,7 +3,6 @@ package ee.jormakroon.hotelreservation.service.reservation;
 import ee.jormakroon.hotelreservation.controller.reservation.dto.ReservationInfo;
 import ee.jormakroon.hotelreservation.infrastructure.rest.exception.DataNotFoundException;
 import ee.jormakroon.hotelreservation.persistence.client.Client;
-import ee.jormakroon.hotelreservation.persistence.client.ClientRepository;
 import ee.jormakroon.hotelreservation.persistence.reservation.Reservation;
 import ee.jormakroon.hotelreservation.persistence.reservation.ReservationRepository;
 import ee.jormakroon.hotelreservation.persistence.room.Room;
@@ -45,31 +44,42 @@ public class ReservationService {
     public void addReservation(ReservationInfo reservationInfo) {
         //Find or create client using the dedicated service
         Client client = clientService.findOrCreateClientFromReservationInfo(reservationInfo);
-
         //Find room by name
         Room room = roomRepository.findByName(reservationInfo.getRoomName())
                 .orElseThrow(() -> new DataNotFoundException("Room not found: " + reservationInfo.getRoomName()));
-
         //Create reservation
-        Reservation reservation = new Reservation();
-        reservation.setClient(client);
-        reservation.setRoom(room);
-        reservation.setCheckInDate(reservationInfo.getCheckInDate());
-        reservation.setCheckOutDate(reservationInfo.getCheckOutDate());
-
+        Reservation reservation = createNewReservation(reservationInfo, client, room);
         //Calculate nights if not provided
+        Integer nights = calculateNightsForReservation(reservationInfo, reservation);
+        //Calculate total price
+        calculateTotalPrice(room, nights, reservation);
+        //Save reservation
+        reservationRepository.save(reservation);
+    }
+
+
+
+    private static void calculateTotalPrice(Room room, Integer nights, Reservation reservation) {
+        BigDecimal totalPrice = room.getPrice().multiply(BigDecimal.valueOf(nights));
+        reservation.setTotalPrice(totalPrice);
+    }
+
+    private Integer calculateNightsForReservation(ReservationInfo reservationInfo, Reservation reservation) {
         Integer nights = reservationInfo.getNights();
         if (nights == null || nights == 0) {
             nights = calculateNights(reservationInfo.getCheckInDate(), reservationInfo.getCheckOutDate());
         }
         reservation.setNights(nights);
+        return nights;
+    }
 
-        //Calculate total price
-        BigDecimal totalPrice = room.getPrice().multiply(BigDecimal.valueOf(nights));
-        reservation.setTotalPrice(totalPrice);
-
-        //Save reservation
-        reservationRepository.save(reservation);
+    private static Reservation createNewReservation(ReservationInfo reservationInfo, Client client, Room room) {
+        Reservation reservation = new Reservation();
+        reservation.setClient(client);
+        reservation.setRoom(room);
+        reservation.setCheckInDate(reservationInfo.getCheckInDate());
+        reservation.setCheckOutDate(reservationInfo.getCheckOutDate());
+        return reservation;
     }
 
     private Integer calculateNights(Instant checkIn, Instant checkOut) {

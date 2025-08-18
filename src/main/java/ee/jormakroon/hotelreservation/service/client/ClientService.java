@@ -14,14 +14,22 @@ public class ClientService {
     private final ClientRepository clientRepository;
 
     @Transactional
-    public Client findOrCreateClient(String firstName, String lastName, String nationality) {
+    public Client findOrCreateClient(String firstName, String lastName, String nationality, String phone) {
         return clientRepository.findByFirstNameAndLastNameAndNationality(
                         firstName, lastName, nationality)
+                .map(client -> {
+                    if (phone != null && !phone.equals(client.getPhone())) {
+                        client.setPhone(phone);
+                    return clientRepository.save(client);
+                }
+                return client;
+                })
                 .orElseGet(() -> {
                     Client client = new Client();
                     client.setFirstName(firstName);
                     client.setLastName(lastName);
                     client.setNationality(nationality);
+                    client.setPhone(phone);
                     return clientRepository.save(client);
                 });
     }
@@ -31,7 +39,8 @@ public class ClientService {
         return findOrCreateClient(
                 reservationInfo.getFirstName(),
                 reservationInfo.getLastName(),
-                reservationInfo.getNationality()
+                reservationInfo.getNationality(),
+                reservationInfo.getPhone()
         );
     }
 }
