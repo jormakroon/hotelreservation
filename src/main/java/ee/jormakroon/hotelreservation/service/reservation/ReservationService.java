@@ -1,6 +1,7 @@
 package ee.jormakroon.hotelreservation.service.reservation;
 
 import ee.jormakroon.hotelreservation.controller.reservation.dto.ReservationInfo;
+import ee.jormakroon.hotelreservation.infrastructure.rest.exception.DataNotFoundException;
 import ee.jormakroon.hotelreservation.persistence.reservation.Reservation;
 import ee.jormakroon.hotelreservation.persistence.reservation.ReservationRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,5 +23,11 @@ public class ReservationService {
         return reservationMapper.toReservationInfoList(reservations);
     }
 
-}
+    public ReservationInfo getReservation(Integer reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(()
+                -> new DataNotFoundException("Reservation not found"));
 
+        return reservationMapper.toReservationInfo(reservation);
+    }
+
+}

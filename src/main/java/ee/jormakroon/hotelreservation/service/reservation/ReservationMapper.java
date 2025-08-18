@@ -21,6 +21,17 @@ public interface ReservationMapper {
     @Mapping(source = "totalPrice", target = "totalPrice")
     ReservationInfo toReservationInfo(Reservation reservation);
 
+    @Mapping(source = "reservationId", target = "id")
+    @Mapping(source = "roomName", target = "room.name")
+    @Mapping(source = "roomTypeName", target = "room.roomType.typeName")
+    @Mapping(source = "firstName", target = "client.firstName")
+    @Mapping(source = "lastName", target = "client.lastName")
+    @Mapping(source = "nationality", target = "client.nationality")
+    @Mapping(source = "checkInDate", dateFormat = "dd.MM.yyyy", target = "checkInDate")
+    @Mapping(source = "checkOutDate", dateFormat = "dd.MM.yyyy", target = "checkOutDate")
+    Reservation toReservation(ReservationInfo reservationInfo);
+
     List<ReservationInfo> toReservationInfoList(List<Reservation> reservations);
+
 
 }
