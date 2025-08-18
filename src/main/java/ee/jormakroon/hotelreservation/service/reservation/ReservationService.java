@@ -2,11 +2,20 @@ package ee.jormakroon.hotelreservation.service.reservation;
 
 import ee.jormakroon.hotelreservation.controller.reservation.dto.ReservationInfo;
 import ee.jormakroon.hotelreservation.infrastructure.rest.exception.DataNotFoundException;
+import ee.jormakroon.hotelreservation.persistence.client.Client;
+import ee.jormakroon.hotelreservation.persistence.client.ClientRepository;
 import ee.jormakroon.hotelreservation.persistence.reservation.Reservation;
 import ee.jormakroon.hotelreservation.persistence.reservation.ReservationRepository;
+import ee.jormakroon.hotelreservation.persistence.room.Room;
+import ee.jormakroon.hotelreservation.persistence.room.RoomRepository;
+import ee.jormakroon.hotelreservation.service.client.ClientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -16,6 +25,8 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final ReservationMapper reservationMapper;
+    private final ClientService clientService;
+    private final RoomRepository roomRepository;
 
     public List<ReservationInfo> getAllReservations() {
         List<Reservation> reservations = reservationRepository.findAll();
@@ -28,6 +39,45 @@ public class ReservationService {
                 -> new DataNotFoundException("Reservation not found"));
 
         return reservationMapper.toReservationInfo(reservation);
+    }
+
+    @Transactional
+    public void addReservation(ReservationInfo reservationInfo) {
+        //Find or create client using the dedicated service
+        Client client = clientService.findOrCreateClientFromReservationInfo(reservationInfo);
+
+        //Find room by name
+        Room room = roomRepository.findByName(reservationInfo.getRoomName())
+                .orElseThrow(() -> new DataNotFoundException("Room not found: " + reservationInfo.getRoomName()));
+
+        //Create reservation
+        Reservation reservation = new Reservation();
+        reservation.setClient(client);
+        reservation.setRoom(room);
+        reservation.setCheckInDate(reservationInfo.getCheckInDate());
+        reservation.setCheckOutDate(reservationInfo.getCheckOutDate());
+
+        //Calculate nights if not provided
+        Integer nights = reservationInfo.getNights();
+        if (nights == null || nights == 0) {
+            nights = calculateNights(reservationInfo.getCheckInDate(), reservationInfo.getCheckOutDate());
+        }
+        reservation.setNights(nights);
+
+        //Calculate total price
+        BigDecimal totalPrice = room.getPrice().multiply(BigDecimal.valueOf(nights));
+        reservation.setTotalPrice(totalPrice);
+
+        //Save reservation
+        reservationRepository.save(reservation);
+    }
+
+    private Integer calculateNights(Instant checkIn, Instant checkOut) {
+        if (checkIn == null || checkOut == null) {
+            return 1;
+        }
+        long days = Duration.between(checkIn, checkOut).toDays();
+        return Math.max(1, (int) days);
     }
 
 }
