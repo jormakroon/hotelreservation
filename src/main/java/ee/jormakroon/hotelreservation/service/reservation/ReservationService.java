@@ -2,6 +2,8 @@ package ee.jormakroon.hotelreservation.service.reservation;
 
 import ee.jormakroon.hotelreservation.controller.reservation.dto.ReservationInfo;
 import ee.jormakroon.hotelreservation.infrastructure.rest.exception.DataNotFoundException;
+import ee.jormakroon.hotelreservation.infrastructure.rest.exception.ReservationValidationException;
+import ee.jormakroon.hotelreservation.infrastructure.rest.error.Error;
 import ee.jormakroon.hotelreservation.persistence.client.Client;
 import ee.jormakroon.hotelreservation.persistence.reservation.Reservation;
 import ee.jormakroon.hotelreservation.persistence.reservation.ReservationRepository;
@@ -42,6 +44,7 @@ public class ReservationService {
 
     @Transactional
     public void addReservation(ReservationInfo reservationInfo) {
+        validateReservationDates(reservationInfo);
         Client client = clientService.findOrCreateClientFromReservationInfo(reservationInfo);
 
         Room room = roomRepository.findByName(reservationInfo.getRoomName())
@@ -54,8 +57,11 @@ public class ReservationService {
     }
 
     public void updateReservation(Integer reservationId, ReservationInfo reservationInfo) {
+        validateReservationDates(reservationInfo);
+
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(()
                 -> new DataNotFoundException("Reservation not found"));
+
         reservation.setClient(clientService.findOrCreateClientFromReservationInfo(reservationInfo));
         reservation.setRoom(roomRepository.findByName(reservationInfo.getRoomName())
                 .orElseThrow(() -> new DataNotFoundException("Room not found: " + reservationInfo.getRoomName())));
@@ -83,6 +89,20 @@ public class ReservationService {
         }
         reservation.setNights(nights);
         return nights;
+    }
+
+    private void validateReservationDates(ReservationInfo reservationInfo) {
+        Instant now = Instant.now();
+        if (reservationInfo.getCheckInDate() != null && reservationInfo.getCheckInDate().isBefore(now)) {
+            throw new ReservationValidationException(Error.PAST_DATE_RESERVATION);
+        }
+        if (reservationInfo.getCheckInDate() != null && reservationInfo.getCheckOutDate() != null
+                && reservationInfo.getCheckOutDate().isBefore(reservationInfo.getCheckInDate())) {
+            throw new ReservationValidationException(Error.CHECK_OUT_BEFORE_CHECK_IN);
+        }
+        if (reservationInfo.getNights() != null && reservationInfo.getNights() < 1) {
+            throw new ReservationValidationException(Error.INVALID_NIGHTS);
+        }
     }
 
     private static Reservation createNewReservation(ReservationInfo reservationInfo, Client client, Room room) {

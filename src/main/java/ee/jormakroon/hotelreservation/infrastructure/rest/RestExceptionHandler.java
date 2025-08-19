@@ -3,6 +3,7 @@ package ee.jormakroon.hotelreservation.infrastructure.rest;
 import ee.jormakroon.hotelreservation.infrastructure.rest.error.ApiError;
 import ee.jormakroon.hotelreservation.infrastructure.rest.exception.DataNotFoundException;
 import ee.jormakroon.hotelreservation.infrastructure.rest.exception.ForbiddenException;
+import ee.jormakroon.hotelreservation.infrastructure.rest.exception.ReservationValidationException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -51,6 +52,21 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         apiError.setPath(request.getRequestURI());
 
         return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Handles cases where a reservation validation fails.
+     * Produces a 400 Bad Request response with an error message and request path.
+     */
+    @ExceptionHandler(ReservationValidationException.class)
+    public ResponseEntity<ApiError> handleReservationValidationException(ReservationValidationException exception, HttpServletRequest request) {
+
+        ApiError apiError = new ApiError();
+        apiError.setStatus(HttpStatus.BAD_REQUEST);
+        apiError.setMessage(exception.getMessage());
+        apiError.setPath(request.getRequestURI());
+
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
     /**

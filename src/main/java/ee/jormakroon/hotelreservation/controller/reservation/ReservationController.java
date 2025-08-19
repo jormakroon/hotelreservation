@@ -44,7 +44,9 @@ public class ReservationController {
             description = "Accepts a new ReservationInfo and adds it to the database ")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "New Reservation added"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")})
+            @ApiResponse(responseCode = "400", description = "Invalid input data (e.g., dates in the past, invalid date range)"),
+            @ApiResponse(responseCode = "404", description = "Room not found"),
+            @ApiResponse(responseCode = "409", description = "Reservation already exists")})
     public void addNewReservation(@RequestBody @Valid ReservationInfo reservationInfo) {
         reservationService.addReservation(reservationInfo);
     }
@@ -54,18 +56,19 @@ public class ReservationController {
             description = "Modifies an existing reservation details")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reservation updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data (e.g., dates in the past, invalid date range)"),
             @ApiResponse(responseCode = "404", description = "Reservation not found")})
     public void updateReservation(@PathVariable("id") Integer reservationId, @RequestBody @Valid ReservationInfo reservationInfo) {
         reservationService.updateReservation(reservationId, reservationInfo);
     }
 
-    @DeleteMapping("/{reservationId}")
+    @DeleteMapping("/{id}")
     @Operation(summary = "Deletes a reservation",
             description = "Deletes a reservation from the database")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reservation deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Reservation not found")})
-    public void deleteReservation(@PathVariable Integer reservationId) {
-        reservationService.deleteReservation(reservationId);
+    public void deleteReservation(@PathVariable Integer id) {
+        reservationService.deleteReservation(id);
     }
 }
