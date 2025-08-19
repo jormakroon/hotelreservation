@@ -42,18 +42,14 @@ public class ReservationService {
 
     @Transactional
     public void addReservation(ReservationInfo reservationInfo) {
-        //Find or create client using the dedicated service
         Client client = clientService.findOrCreateClientFromReservationInfo(reservationInfo);
-        //Find room by name
+
         Room room = roomRepository.findByName(reservationInfo.getRoomName())
                 .orElseThrow(() -> new DataNotFoundException("Room not found: " + reservationInfo.getRoomName()));
-        //Create reservation
+
         Reservation reservation = createNewReservation(reservationInfo, client, room);
-        //Calculate nights if not provided
         Integer nights = calculateNightsForReservation(reservationInfo, reservation);
-        //Calculate total price
         calculateTotalPrice(room, nights, reservation);
-        //Save reservation
         reservationRepository.save(reservation);
     }
 
@@ -73,7 +69,6 @@ public class ReservationService {
     public void deleteReservation(Integer reservationId) {
         reservationRepository.deleteById(reservationId);
     }
-
 
 
     private static void calculateTotalPrice(Room room, Integer nights, Reservation reservation) {

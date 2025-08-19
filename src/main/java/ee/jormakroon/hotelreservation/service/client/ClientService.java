@@ -24,23 +24,32 @@ public class ClientService {
                 }
                 return client;
                 })
-                .orElseGet(() -> {
-                    Client client = new Client();
-                    client.setFirstName(firstName);
-                    client.setLastName(lastName);
-                    client.setNationality(nationality);
-                    client.setPhone(phone);
-                    return clientRepository.save(client);
-                });
+                .orElseGet(() -> createClient(firstName, lastName, nationality, phone));
+
     }
 
     @Transactional
     public Client findOrCreateClientFromReservationInfo(ReservationInfo reservationInfo) {
+        return retrieveOrCreateClient(reservationInfo);
+    }
+
+
+
+    private Client retrieveOrCreateClient(ReservationInfo reservationInfo) {
         return findOrCreateClient(
                 reservationInfo.getFirstName(),
                 reservationInfo.getLastName(),
                 reservationInfo.getNationality(),
                 reservationInfo.getPhone()
         );
+    }
+
+    private Client createClient(String firstName, String lastName, String nationality, String phone) {
+        Client client = new Client();
+        client.setFirstName(firstName);
+        client.setLastName(lastName);
+        client.setNationality(nationality);
+        client.setPhone(phone);
+        return clientRepository.save(client);
     }
 }

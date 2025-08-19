@@ -5,21 +5,22 @@ import ee.jormakroon.hotelreservation.service.reservation.ReservationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.boot.model.source.spi.IdentifierSourceAggregatedComposite;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/reservations")
 
 public class ReservationController {
 
     private final ReservationService reservationService;
 
-    @GetMapping("/reservations/all")
+    @GetMapping
     @Operation(summary = "Returns all reservations",
             description = "If there is no reservations, returns an empty array")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK")})
@@ -27,7 +28,7 @@ public class ReservationController {
         return reservationService.getAllReservations();
     }
 
-    @GetMapping("/reservation/{id}")
+    @GetMapping("/{id}")
     @Operation(summary = "Returns reservation info by id",
             description = "If reservation does not exist, responds with error code")
     @ApiResponses(value = {
@@ -37,27 +38,28 @@ public class ReservationController {
         return reservationService.getReservation(id);
     }
 
-    @PostMapping("/reservation/add")
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "adds a new reservation to the system",
             description = "Accepts a new ReservationInfo and adds it to the database ")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "New Reservation added"),
-            @ApiResponse(responseCode = "404", description = "Invalid input data")})
-    public void addNewReservation(@RequestBody ReservationInfo reservationInfo) {
+            @ApiResponse(responseCode = "400", description = "Invalid input data")})
+    public void addNewReservation(@RequestBody @Valid ReservationInfo reservationInfo) {
         reservationService.addReservation(reservationInfo);
     }
 
-    @PutMapping("/reservation/{id}")
+    @PutMapping("/{id}")
     @Operation(summary = "Updates reservation details",
             description = "Modifies an existing reservation details")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reservation updated successfully"),
             @ApiResponse(responseCode = "404", description = "Reservation not found")})
-    public void updateReservation(@PathVariable("id") Integer reservationId, @RequestBody ReservationInfo reservationInfo) {
+    public void updateReservation(@PathVariable("id") Integer reservationId, @RequestBody @Valid ReservationInfo reservationInfo) {
         reservationService.updateReservation(reservationId, reservationInfo);
     }
 
-    @DeleteMapping("/reservation/{reservationId}")
+    @DeleteMapping("/{reservationId}")
     @Operation(summary = "Deletes a reservation",
             description = "Deletes a reservation from the database")
     @ApiResponses(value = {
