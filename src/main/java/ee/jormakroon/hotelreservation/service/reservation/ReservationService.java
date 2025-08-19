@@ -57,6 +57,19 @@ public class ReservationService {
         reservationRepository.save(reservation);
     }
 
+    public void updateReservation(Integer reservationId, ReservationInfo reservationInfo) {
+        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(()
+                -> new DataNotFoundException("Reservation not found"));
+        reservation.setClient(clientService.findOrCreateClientFromReservationInfo(reservationInfo));
+        reservation.setRoom(roomRepository.findByName(reservationInfo.getRoomName())
+                .orElseThrow(() -> new DataNotFoundException("Room not found: " + reservationInfo.getRoomName())));
+        reservation.setCheckInDate(reservationInfo.getCheckInDate());
+        reservation.setCheckOutDate(reservationInfo.getCheckOutDate());
+        Integer nights = calculateNightsForReservation(reservationInfo, reservation);
+        calculateTotalPrice(reservation.getRoom(), nights, reservation);
+        reservationRepository.save(reservation);
+    }
+
 
 
     private static void calculateTotalPrice(Room room, Integer nights, Reservation reservation) {

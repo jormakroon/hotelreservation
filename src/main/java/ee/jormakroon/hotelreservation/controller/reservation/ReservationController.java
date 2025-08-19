@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.boot.model.source.spi.IdentifierSourceAggregatedComposite;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,4 +47,13 @@ public class ReservationController {
         reservationService.addReservation(reservationInfo);
     }
 
+    @PutMapping("/reservation/{id}")
+    @Operation(summary = "Updates reservation details",
+            description = "Modifies an existing reservation details")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reservation updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Reservation not found")})
+    public void updateReservation(@PathVariable("id") Integer reservationId, @RequestBody ReservationInfo reservationInfo) {
+        reservationService.updateReservation(reservationId, reservationInfo);
+    }
 }
