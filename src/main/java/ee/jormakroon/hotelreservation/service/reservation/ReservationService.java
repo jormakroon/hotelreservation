@@ -70,6 +70,10 @@ public class ReservationService {
         reservationRepository.save(reservation);
     }
 
+    public void deleteReservation(Integer reservationId) {
+        reservationRepository.deleteById(reservationId);
+    }
+
 
 
     private static void calculateTotalPrice(Room room, Integer nights, Reservation reservation) {

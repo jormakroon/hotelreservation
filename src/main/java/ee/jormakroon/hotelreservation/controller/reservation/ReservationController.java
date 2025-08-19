@@ -56,4 +56,14 @@ public class ReservationController {
     public void updateReservation(@PathVariable("id") Integer reservationId, @RequestBody ReservationInfo reservationInfo) {
         reservationService.updateReservation(reservationId, reservationInfo);
     }
+
+    @DeleteMapping("/reservation/{reservationId}")
+    @Operation(summary = "Deletes a reservation",
+            description = "Deletes a reservation from the database")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reservation deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Reservation not found")})
+    public void deleteReservation(@PathVariable Integer reservationId) {
+        reservationService.deleteReservation(reservationId);
+    }
 }
