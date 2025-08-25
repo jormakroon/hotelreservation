@@ -70,22 +70,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
-
-        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .findFirst()
-                .orElse("Validation error");
-
-        ApiError apiError = new ApiError();
-        apiError.setStatus(HttpStatus.BAD_REQUEST);
-        apiError.setMessage(errorMessage);
-        apiError.setPath(request.getRequestURI());
-
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
-    }
-
     /**
      * Handles validation failures on method arguments.
      * Pulls out the first validation error, then returns a 400 Bad Request
