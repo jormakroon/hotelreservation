@@ -14,8 +14,6 @@ public interface ReservationMapper {
     @Mapping(source = "client.firstName", target = "firstName")
     @Mapping(source = "client.lastName", target = "lastName")
     @Mapping(source = "client.nationality", target = "nationality")
-    @Mapping(source = "checkInDate", dateFormat = "dd.MM.yyyy", target = "checkInDate")
-    @Mapping(source = "checkOutDate", dateFormat = "dd.MM.yyyy", target = "checkOutDate")
     @Mapping(source = "nights", target = "nights")
     @Mapping(target = "phone", ignore = true)
     ReservationInfo toReservationInfo(Reservation reservation);
@@ -27,11 +25,7 @@ public interface ReservationMapper {
     @Mapping(source = "lastName", target = "client.lastName")
     @Mapping(source = "nationality", target = "client.nationality")
     @Mapping(source = "phone", target = "client.phone")
-    @Mapping(source = "checkInDate", dateFormat = "dd.MM.yyyy", target = "checkInDate")
-    @Mapping(source = "checkOutDate", dateFormat = "dd.MM.yyyy", target = "checkOutDate")
     Reservation toReservation(ReservationInfo reservationInfo);
 
     List<ReservationInfo> toReservationInfoList(List<Reservation> reservations);
-
-
 }

@@ -58,7 +58,7 @@ public class ReservationController {
             @ApiResponse(responseCode = "200", description = "Reservation updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data (e.g., dates in the past, invalid date range)"),
             @ApiResponse(responseCode = "404", description = "Reservation not found")})
-    public void updateReservation(@PathVariable("id") Integer reservationId, @RequestBody @Valid ReservationInfo reservationInfo) {
+    public void updateReservation(@PathVariable("id") Integer reservationId, @Valid @RequestBody ReservationInfo reservationInfo) {
         reservationService.updateReservation(reservationId, reservationInfo);
     }
 

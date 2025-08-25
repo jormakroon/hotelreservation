@@ -21,7 +21,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
@@ -29,16 +28,16 @@ public class ReservationService {
     private final ClientService clientService;
     private final RoomRepository roomRepository;
 
+    @Transactional(readOnly = true)
     public List<ReservationInfo> getAllReservations() {
         List<Reservation> reservations = reservationRepository.findAll();
-
         return reservationMapper.toReservationInfoList(reservations);
     }
 
+    @Transactional(readOnly = true)
     public ReservationInfo getReservation(Integer reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(()
-                -> new DataNotFoundException("Reservation not found"));
-
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new DataNotFoundException("Reservation not found"));
         return reservationMapper.toReservationInfo(reservation);
     }
 
@@ -56,11 +55,12 @@ public class ReservationService {
         reservationRepository.save(reservation);
     }
 
+    @Transactional
     public void updateReservation(Integer reservationId, ReservationInfo reservationInfo) {
         validateReservationDates(reservationInfo);
 
-        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(()
-                -> new DataNotFoundException("Reservation not found"));
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new DataNotFoundException("Reservation not found"));
 
         reservation.setClient(clientService.findOrCreateClientFromReservationInfo(reservationInfo));
         reservation.setRoom(roomRepository.findByName(reservationInfo.getRoomName())
@@ -72,10 +72,10 @@ public class ReservationService {
         reservationRepository.save(reservation);
     }
 
+    @Transactional
     public void deleteReservation(Integer reservationId) {
         reservationRepository.deleteById(reservationId);
     }
-
 
     private static void calculateTotalPrice(Room room, Integer nights, Reservation reservation) {
         BigDecimal totalPrice = room.getPrice().multiply(BigDecimal.valueOf(nights));
@@ -114,7 +114,7 @@ public class ReservationService {
         return reservation;
     }
 
-    private Integer calculateNights(Instant checkIn, Instant checkOut) {
+    private static Integer calculateNights(Instant checkIn, Instant checkOut) {
         if (checkIn == null || checkOut == null) {
             return 1;
         }
