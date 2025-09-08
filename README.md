@@ -28,7 +28,7 @@ You need to install Java 21 and Gradle to run this application and your favorite
 
 
 ## Running Application
-1. Clone the repository: 'git clone https://github.com/jormakroon/hotel-reservation.git'
+1. Clone the repository: 'git clone https://github.com/jormakroon/hotelreservation.git'
 2. Run './gradlew clean build': This will build the application and run unit tests
 3. Run './gradlew hsqldbStart': This will start the embedded HSQLDB database
 4. Run './gradlew hsqldbStop': This will stop the embedded HSQLDB database
